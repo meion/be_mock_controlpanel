@@ -5,10 +5,12 @@ var jsv = require('json-validator');
 var jwt = require('jsonwebtoken');
 var bcrypt = require('bcryptjs');
 const secret = require('./config/example.json').secret;
+var cors = require('cors');
 
 var app = express();
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
+app.use(cors())
 
 var userSchema = {
     username: {
