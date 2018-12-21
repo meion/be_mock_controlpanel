@@ -52,25 +52,29 @@ const error = {
 
 app.post('/register', async (req, res) => {
     if(!validJSON(req.body)){
-        res.send("Wrong JSON-format");
+        res.send({"error":{"message":"erroe"}});
+        return;
     }
     const helper = new MongoHelper();
     try{
         let result = await helper.client.getUser(req.body.username, 'users');
+        console.log(result);
         if(result){
             var token = jwt.sign({id: result._id}, secret, {expiresIn: 86400});
-            res.status(200).send({auth:true, token: token})
+            res.send({auth:true, token: token});
         }else{
-            res.status(500).send({
-                error:{
-                    message:"Couldn't verify user and therefore no token was generated"
+            console.log('hello')
+            res.send({
+                "error":{
+                    "message":"Couldnt verify user and therefore no token was generated"
                 }
             })
         }
     }catch(e){
+        console.log(e)
         res.send({
-            error:{
-                message:e
+            "error":{
+                message:"JSON.stringify(e)"
             }
         });
     }
@@ -81,21 +85,23 @@ app.get('/validate/token', async (req,res) => {
     let validRequest = await validateRequest(req.headers, helper.client);
     if(!validRequest){
         res.send({
-            ...error.error
+            "error":{
+                ...error.error
+            }
         })
     }
     let result = await helper.client.validateToken(token);
     console.log(result);
     if(result){
         res.send({
-            result:{
+            "result":{
                 token: token,
                 message:"is_valid"
             }
         })
     }else{
         res.send({
-            result:{
+            "result":{
                 token:token,
                 message:"is_invalid"
             }
@@ -109,7 +115,9 @@ app.post('/validate/user', async (req, res) => {
     let validRequest = await validateRequest(req.headers, helper.client);
     if(!validRequest){
         res.send({
-            ...error.error
+            "error":{
+                ...error.error
+            }
         });
         return;
     }
@@ -118,17 +126,17 @@ app.post('/validate/user', async (req, res) => {
     }
     try{
         let user = {
-            username: req.body.username,
-            password: req.body.password
+            "username": req.body.username,
+            "password": req.body.password
         }
         let result = await helper.client.validateUser(user, "users");
         res.send({
-            result: result
+            "result": result
         });
     }catch(e){
         res.send({
-            error:{
-                message:e
+            "error":{
+                message:"231"
             }
         })
     }
@@ -142,7 +150,9 @@ app.post('/insert/user',async (req, res) => {
    let validRequest = await validateRequest(req.headers, helper.client);
    if(!validRequest){
         res.send({
-            ...error.error
+            "error":{
+                ...error.error
+            }
         })
     }
    if(error_messages.length > 0){
@@ -159,7 +169,9 @@ app.post('/insert/user',async (req, res) => {
        }else{
            finalResult = "Username already taken";
        }
-       res.send(finalResult);
+       res.send({
+           "result": finalResult
+       });
     }
        
 })

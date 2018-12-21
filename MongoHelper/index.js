@@ -31,10 +31,17 @@ class Client{
                     let result = await collection.findOne({
                         username: username
                     });
-                    resolve(result);
+                    console.log('123123')
+                    resolve({result: JSON.stringify(result)});
                 });
-            }catch{
-                reject(false)
+            }catch(e){
+
+                console.log('1123213')
+                reject({
+                    error:{
+                        message: JSON.stringify(e)
+                    }
+                })
             }
         })
     }
