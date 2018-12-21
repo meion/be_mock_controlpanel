@@ -1,8 +1,9 @@
 const MongoClient = require('mongodb').MongoClient;
 const db_config = require('../config/db.json');
 const assert = require('assert');
-
+var jwt = require('jsonwebtoken');
 var bcrypt = require('bcryptjs');
+const secret = require('../config/example.json').secret;
 module.exports = class MongoHelper{
     constructor(){
         this.client = new Client(db_config.url, db_config.dbName);
@@ -16,6 +17,7 @@ class Client{
         this.Insert = this.Insert.bind(this);
         this.availableUsername = this.availableUsername.bind(this);
         this.getUser = this.getUser.bind(this);
+        this.validateToken = this.validateToken.bind(this);
     }
     getUser(username, collectionName){
         const client = new MongoClient(this.url, { useNewUrlParser: true });
@@ -35,6 +37,15 @@ class Client{
                 reject(false)
             }
         })
+    }
+    async validateToken(token){
+        try{
+            let result = await jwt.verify(token, secret);
+            console.log(result);
+            return result.id ? true : false;
+        }catch{
+            return false;
+        }
     }
     async validateUser(user, collectionName){
         try{

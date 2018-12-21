@@ -32,6 +32,21 @@ const validJSON = (json) => {
     return !error_messages.length ? true : false;
 }
 
+const getToken = (headers) => {
+    let token = headers['authorization'].split(' ');
+    return token[token.length - 1];
+}
+const validateRequest = async (headers, client) => {
+    return await client.validateToken(getToken(headers));
+
+}
+const error = {
+    error:{
+        "reason":"unauthorized",
+        "message":"Got a valid JWT-token?"
+    }
+}
+
 app.post('/register', async (req, res) => {
     if(!validJSON(req.body)){
         res.send("Wrong JSON-format");
@@ -39,19 +54,53 @@ app.post('/register', async (req, res) => {
     const helper = new MongoHelper();
     try{
         let result = await helper.client.getUser(req.body.username, 'users');
+        if(result){
+            var token = jwt.sign({id: result._id}, secret, {expiresIn: 86400});
+            res.status(200).send({auth:true, token: token})
+        }else{
+            res.status(500).send("Couldn't verify user and therefore no token was generated")
+        }
     }catch{
         res.send(false);
     }
+})
+app.get('/validate/token', async (req,res) => {
+    const helper = new MongoHelper();
+    var token = getToken(req.headers);
+    let validRequest = validateRequest(req.headers, helper.client);
+    if(!validRequest){
+        res.send({
+            ...error.error
+        })
+    }
+    let result = await helper.client.validateToken(token);
+    console.log(result);
     if(result){
-        var token = jwt.sign({id: result._id}, secret, {expiresIn: 86400});
-        res.status(200).send({auth:true, token: token})
+        res.send({
+            result:{
+                token: token,
+                message:"is_valid"
+            }
+        })
     }else{
-        res.status(500).send("Couldn't verify user and therefore no token was generated")
+        res.send({
+            result:{
+                token:token,
+                message:"is_invalid"
+            }
+        })
     }
 })
 
+
 app.post('/validate/user', async (req, res) => {
     const helper = new MongoHelper();
+    let validRequest = validateRequest(req.headers, helper.client);
+    if(!validRequest){
+        res.send({
+            ...error.error
+        })
+    }
     if(!validJSON(req.body)){
         res.send(false);
     }
@@ -62,7 +111,7 @@ app.post('/validate/user', async (req, res) => {
         }
         let result = await helper.client.validateUser(user, "users");
         res.send(result);
-    }catch{
+    }catch(e){
         res.send(false)
     }
 
@@ -72,6 +121,12 @@ app.post('/insert/user',async (req, res) => {
    const helper = new MongoHelper();
    let error_messages = jsv.validate(req.body, userSchema)
    let finalResult = "";
+   let validRequest = validateRequest(req.headers, helper.client);
+   if(!validRequest){
+        res.send({
+            ...error.error
+        })
+    }
    if(error_messages.length > 0){
        res.send(error_messages);
    }else{
