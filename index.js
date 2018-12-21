@@ -61,10 +61,18 @@ app.post('/register', async (req, res) => {
             var token = jwt.sign({id: result._id}, secret, {expiresIn: 86400});
             res.status(200).send({auth:true, token: token})
         }else{
-            res.status(500).send("Couldn't verify user and therefore no token was generated")
+            res.status(500).send({
+                error:{
+                    message:"Couldn't verify user and therefore no token was generated"
+                }
+            })
         }
-    }catch{
-        res.send(false);
+    }catch(e){
+        res.send({
+            error:{
+                message:e
+            }
+        });
     }
 })
 app.get('/validate/token', async (req,res) => {
@@ -114,9 +122,15 @@ app.post('/validate/user', async (req, res) => {
             password: req.body.password
         }
         let result = await helper.client.validateUser(user, "users");
-        res.send(result);
+        res.send({
+            result: result
+        });
     }catch(e){
-        res.send(false)
+        res.send({
+            error:{
+                message:e
+            }
+        })
     }
 
 })
