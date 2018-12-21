@@ -70,7 +70,7 @@ app.post('/register', async (req, res) => {
 app.get('/validate/token', async (req,res) => {
     const helper = new MongoHelper();
     var token = getToken(req.headers);
-    let validRequest = validateRequest(req.headers, helper.client);
+    let validRequest = await validateRequest(req.headers, helper.client);
     if(!validRequest){
         res.send({
             ...error.error
@@ -98,11 +98,12 @@ app.get('/validate/token', async (req,res) => {
 
 app.post('/validate/user', async (req, res) => {
     const helper = new MongoHelper();
-    let validRequest = validateRequest(req.headers, helper.client);
+    let validRequest = await validateRequest(req.headers, helper.client);
     if(!validRequest){
         res.send({
             ...error.error
-        })
+        });
+        return;
     }
     if(!validJSON(req.body)){
         res.send(false);
@@ -124,7 +125,7 @@ app.post('/insert/user',async (req, res) => {
    const helper = new MongoHelper();
    let error_messages = jsv.validate(req.body, userSchema)
    let finalResult = "";
-   let validRequest = validateRequest(req.headers, helper.client);
+   let validRequest = await validateRequest(req.headers, helper.client);
    if(!validRequest){
         res.send({
             ...error.error
