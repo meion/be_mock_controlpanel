@@ -35,6 +35,7 @@ const validJSON = (json) => {
 }
 
 const getToken = (headers) => {
+    if(!headers['authorization'])return;
     let token = headers['authorization'].split(' ');
     return token[token.length - 1];
 }
