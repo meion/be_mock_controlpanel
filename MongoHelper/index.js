@@ -2,6 +2,7 @@ const MongoClient = require('mongodb').MongoClient;
 const db_config = require('../config/db.json');
 const assert = require('assert');
 
+var bcrypt = require('bcryptjs');
 module.exports = class MongoHelper{
     constructor(){
         this.client = new Client(db_config.url, db_config.dbName);
@@ -14,10 +15,10 @@ class Client{
         this.client = new MongoClient(url, { useNewUrlParser: true });
         this.Insert = this.Insert.bind(this);
         this.availableUsername = this.availableUsername.bind(this);
+        this.getUser = this.getUser.bind(this);
     }
-    validateUser(user, collectionName){
+    getUser(username, collectionName){
         const client = new MongoClient(this.url, { useNewUrlParser: true });
-        let validated = false;
         return new Promise((resolve, reject) => {
             try{
                 client.connect(async (err) => {
@@ -26,17 +27,25 @@ class Client{
                     const db = client.db(this.dbName);
                     const collection = db.collection(collectionName);
                     let result = await collection.findOne({
-                        username: user.username
+                        username: username
                     });
-                    if(result !== null){
-                        validated = user.username === result.username && user.password === result.password;
-                    }
-                    resolve(validated);
+                    resolve(result);
                 });
             }catch{
                 reject(false)
             }
         })
+    }
+    async validateUser(user, collectionName){
+        try{
+            let newUser = await this.getUser(user.username, collectionName);
+            let result = await bcrypt.compare(user.password, newUser.password)
+            console.log(result);
+            return result;
+        }catch(e){
+            return e;
+            // return new Promise((resolve, reject) => reject())
+        }
     }
 
     availableUsername(username, collectionName){
