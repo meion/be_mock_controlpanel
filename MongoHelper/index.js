@@ -32,7 +32,7 @@ class Client{
                         username: username
                     });
                     console.log('123123')
-                    resolve({result: result});
+                    resolve({user: result});
                 });
             }catch(e){
 
