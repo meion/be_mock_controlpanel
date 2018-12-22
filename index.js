@@ -59,11 +59,12 @@ router.post('/register', async (req, res) => {
     const helper = new MongoHelper();
     try{
         let result = await helper.client.getUser(req.body.username, 'users');
-        if(result.result === 'null'){
-            res.send({error:{message:'not a valid user'}})
-        }else{
-            var token = jsoncreater.sign({id: result._id}, secret, {expiresIn: 86400});
+        let correctPass = await bcrypt.compare(req.body.password, result.result.password);
+        if(result.result !== 'null' && correctPass){
+            var token = jsoncreater.sign({id: result.result._id}, secret, {expiresIn: 86400});
             res.send({auth:true, token: token});
+        }else{
+            res.send({error:{message:'not a valid user'}})
         }
     }catch(e){
         console.log(e)
