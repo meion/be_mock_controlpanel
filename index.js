@@ -59,17 +59,11 @@ router.post('/register', async (req, res) => {
     const helper = new MongoHelper();
     try{
         let result = await helper.client.getUser(req.body.username, 'users');
-        console.log(result);
-        if(result){
+        if(result.result === 'null'){
+            res.send({error:{message:'not a valid user'}})
+        }else{
             var token = jsoncreater.sign({id: result._id}, secret, {expiresIn: 86400});
             res.send({auth:true, token: token});
-        }else{
-            console.log('hello')
-            res.send({
-                "error":{
-                    "message":"Couldnt verify user and therefore no token was generated"
-                }
-            })
         }
     }catch(e){
         console.log(e)
