@@ -12,7 +12,7 @@ var app = express();
 var router = express.Router();
 router.use(jwt({
     secret: secret,
-    credentialsRequired: false,
+    credentialsRequired: true,
     getToken: function fromHeaderOrQuerystring (req) {
         if (req.headers.authorization && req.headers.authorization.split(' ')[0] === 'Bearer') {
             return req.headers.authorization.split(' ')[1];
@@ -21,7 +21,7 @@ router.use(jwt({
         }
         return null;
     }
-}));
+}).unless(({path: ['/api/register']})));
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use(cors())
@@ -45,19 +45,11 @@ var userSchema = {
 }
 
 router.get('/', (req, res) =>{
-    if(req.user){
-        res.send({
-            result:{
-                message:"valid"
-            }
-        })
-    }else{
-        res.send({
-            error:{
-                message:"invalid"
-            }
-        })
-    }
+    res.send({
+        result:{
+            message:"valid"
+        }
+    })
 })
 router.post('/register', async (req, res) => {
     if(!validJSON(req.body)){
