@@ -51,7 +51,7 @@ function isConnected() {
 const models = getModels();
 
 
-function getUser(username, collectionName) {
+export function getUser(username, collectionName) {
     return new Promise(async (resolve, reject) => {
         try {
             await isConnected();
@@ -93,7 +93,7 @@ async function validateUser(user, collectionName) {
     }
 }
 
-function availableUsername(username, collectionName){
+export function availableUsername(username, collectionName){
     return new Promise(async (resolve ,reject) => {
         try {
             await isConnected();
@@ -108,7 +108,8 @@ function availableUsername(username, collectionName){
         }
     })
 }
-function InsertMany(values, collectionName) {
+
+export function InsertMany(values, collectionName) {
     return new Promise(async (resolve, reject) => {
         try {
             await isConnected();
@@ -121,7 +122,8 @@ function InsertMany(values, collectionName) {
         }
     });
 }
-function InitDevEnviroment() {
+
+export function InitDevEnviroment() {
     return new Promise(async (resolve,reject) => {
         await isConnected();
         db.collection("Fnutter")
@@ -130,7 +132,8 @@ function InitDevEnviroment() {
         resolve(result.result);
     })
 }
-function Insert(value, collectionName) {
+
+export function Insert(value, collectionName) {
     return new Promise(async (resolve, reject) => {
         try{
             await isConnected();
@@ -144,9 +147,9 @@ function Insert(value, collectionName) {
     })
 }
 
-export default {
-    availableUsername,
-    Insert,
-    InsertMany,
-    getUser
-};
+// export default {
+//     availableUsername,
+//     Insert,
+//     InsertMany,
+//     getUser
+// };

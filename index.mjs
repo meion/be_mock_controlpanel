@@ -1,6 +1,6 @@
 import express from 'express';
 import bodyParser from 'body-parser';
-import MongoHelper from './MongoHelper';
+import { getUser, Insert, InsertMany, availableUsername } from './MongoHelper';
 import jsonValidate from 'json-validator';
 import jwt from 'jsonwebtoken';
 import expressJwt from 'express-jwt';
@@ -59,7 +59,7 @@ router.post('/register', async (req, res) => {
         return;
     }
     try{
-        let result = await MongoHelper.getUser(req.body.username, 'users');
+        let result = await getUser(req.body.username, 'users');
         let correctPass = await bcrypt.compare(req.body.password, result.user.password);
         if(result.user !== 'null' && correctPass){
             var token = jwt.sign({id: result.user._id}, secret, {expiresIn: 86400});
@@ -86,7 +86,7 @@ router.post('/InitDevDB', async(req, res) => {
 
 
 router.post('/insert/Items', async (req, res) => {
-    await MongoHelper.InsertMany(req.body.values, "Item");
+    await InsertMany(req.body.values, "Item");
     res.send({
         "result": "OK"
     });
@@ -99,9 +99,9 @@ router.post('/insert/user',async (req, res) => {
     }
     let username = req.body.username;
     let hashpassword = bcrypt.hashSync(req.body.password, 8);
-    let result = await MongoHelper.availableUsername(username, "users");
+    let result = await availableUsername(username, "users");
     if(result){
-        finalResult = await MongoHelper.Insert({
+        finalResult = await Insert({
             "username":username,
             "password":hashpassword
         }, "users");
