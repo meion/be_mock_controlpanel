@@ -86,10 +86,11 @@ router.post('/InitDevDB', async(req, res) => {
 
 
 router.post('/insert/Items', async (req, res) => {
-    console.log("insert/items");
-    let result = await MongoHelper.InsertMany(req.body.values, "Item");
-    console.log(result);
-})
+    await MongoHelper.InsertMany(req.body.values, "Item");
+    res.send({
+        "result": "OK"
+    });
+});
 
 
 router.post('/insert/user',async (req, res) => {

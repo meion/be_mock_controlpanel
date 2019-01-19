@@ -39,11 +39,11 @@ var PersonSchema = new Schema({
     groups:[{type:Schema.Types.ObjectId, ref:'Group'}]
 })
 
-export function getModels(db) {
-    const Item = db.model("Item", ItemSchema);
-    const Order = db.model("Order", OrderSchema);
-    const Group = db.model("Group", GroupSchema);
-    const Person = db.model("Person", PersonSchema);
+export function getModels() {
+    const Item = mongoose.model("Item", ItemSchema);
+    const Order = mongoose.model("Order", OrderSchema);
+    const Group = mongoose.model("Group", GroupSchema);
+    const Person = mongoose.model("Person", PersonSchema);
 
     return {
         Item,

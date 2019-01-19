@@ -8,22 +8,53 @@ import db_config from "../config/db.json";
 import config from "../config/example.json";
 
 const secret = config.secret;
+let db_connected = false;
 
 mongoose.connect('mongodb://localhost:27017/test', {useNewUrlParser: true});
 const db = mongoose.connection;
 
-let models;
-
-db.once('open', () => {
-    models = getModels(db);
+db.on('error', err => {
+    console.error(err);
 });
+db.once('open', () => {
+    db_connected = true;
+});
+
+function isConnected() {
+    let timer;
+    let counter = 0;
+    function waitUntil(callback) {
+        if (!db_connected) {
+            counter++;
+            if (counter >= 10) {
+                callback(false);
+                return;
+            }
+            timer = setTimeout(waitUntil, 500, callback);
+        } else {
+            clearTimeout(timer);
+            callback(true);
+        }
+    }
+    return new Promise( (resolve,reject) => {
+        waitUntil(status => {
+            if (status) {
+                console.log("Connected correctly");
+                resolve();
+            } else {
+                reject();
+            }
+        });
+    });
+}
+
+const models = getModels();
 
 
 function getUser(username, collectionName) {
     return new Promise(async (resolve, reject) => {
         try {
-            assert.equal(null, err);
-            console.log("Connected correctly");
+            await isConnected();
             const collection = db.collection(collectionName);
             let result = await collection.findOne({
                 username: username
@@ -65,9 +96,7 @@ async function validateUser(user, collectionName) {
 function availableUsername(username, collectionName){
     return new Promise(async (resolve ,reject) => {
         try {
-            console.log(err);
-            assert.equal(null, err);
-            console.log("Connected correctly");
+            await isConnected();
             const collection = db.collection(collectionName);
             let result = await collection.findOne({
                 username: username
@@ -81,16 +110,20 @@ function availableUsername(username, collectionName){
 }
 function InsertMany(values, collectionName) {
     return new Promise(async (resolve, reject) => {
-        console.log("Connected correctly");
-        const collection = db.collection(collectionName);
-        let result = await collection.insertMany(values);
-        resolve(result.result);
-    })
+        try {
+            await isConnected();
+            const collection = db.collection(collectionName);
+            let result = await collection.insertMany(values);
+            console.log(result);
+            resolve(result.result);
+        } catch (err) {
+            reject(err);
+        }
+    });
 }
 function InitDevEnviroment() {
-    return new Promise((resolve,reject) => {
-        assert.equal(null, err);
-        console.log("Connected correctly");
+    return new Promise(async (resolve,reject) => {
+        await isConnected();
         db.collection("Fnutter")
         // const collection = db.collection(collectionName);
         // let result = await collection.insertMany(values);
@@ -100,8 +133,7 @@ function InitDevEnviroment() {
 function Insert(value, collectionName) {
     return new Promise(async (resolve, reject) => {
         try{
-            assert.equal(null, err);
-            console.log('Connected correctly');
+            await isConnected();
             const collection = db.collection(collectionName);
             let result = await collection.insertOne(value);
             client.close();
