@@ -1,16 +1,18 @@
-var express = require('express');
-var bodyParser = require('body-parser');
-const MongoHelper = require('./MongoHelper');
-var jsv = require('json-validator');
-var jsoncreater = require('jsonwebtoken');
-var jwt = require('express-jwt');
-var bcrypt = require('bcryptjs');
-const secret = require('./config/example.json').secret;
-var cors = require('cors');
+import express from 'express';
+import bodyParser from 'body-parser';
+import MongoHelper from './MongoHelper';
+import jsonValidate from 'json-validator';
+import jwt from 'jsonwebtoken';
+import expressJwt from 'express-jwt';
+import bcrypt from 'bcrypt';
+import config from './config/example.json';
+import cors from 'cors';
+
+const secret = config.secret;
 
 var app = express();
 var router = express.Router();
-router.use(jwt({
+router.use(expressJwt({
     secret: secret,
     credentialsRequired: true,
     getToken: function fromHeaderOrQuerystring (req) {
@@ -29,7 +31,7 @@ app.use('/api', router);
 
 
 const validJSON = (json) => {
-    let error_messages = jsv.validate(json, userSchema);
+    let error_messages = jsonValidate.validate(json, userSchema);
     return !error_messages.length ? true : false;
 }
 
@@ -56,12 +58,11 @@ router.post('/register', async (req, res) => {
         res.send({"error":{"message":"error"}});
         return;
     }
-    const helper = new MongoHelper();
     try{
-        let result = await helper.client.getUser(req.body.username, 'users');
+        let result = await MongoHelper.getUser(req.body.username, 'users');
         let correctPass = await bcrypt.compare(req.body.password, result.user.password);
         if(result.user !== 'null' && correctPass){
-            var token = jsoncreater.sign({id: result.user._id}, secret, {expiresIn: 86400});
+            var token = jwt.sign({id: result.user._id}, secret, {expiresIn: 86400});
             res.send({
                 auth:true, 
                 token: token,
@@ -79,16 +80,27 @@ router.post('/register', async (req, res) => {
         });
     }
 })
+router.post('/InitDevDB', async(req, res) => {
+
+})
+
+
+router.post('/insert/Items', async (req, res) => {
+    console.log("insert/items");
+    let result = await MongoHelper.InsertMany(req.body.values, "Item");
+    console.log(result);
+})
+
+
 router.post('/insert/user',async (req, res) => {
-   const helper = new MongoHelper();
     if(!validJSON(req.body)){
         res.send(false);
     }
     let username = req.body.username;
     let hashpassword = bcrypt.hashSync(req.body.password, 8);
-    let result = await helper.client.availableUsername(username, "users");
+    let result = await MongoHelper.availableUsername(username, "users");
     if(result){
-        finalResult = await helper.client.Insert({
+        finalResult = await MongoHelper.Insert({
             "username":username,
             "password":hashpassword
         }, "users");
