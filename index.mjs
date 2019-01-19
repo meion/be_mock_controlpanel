@@ -16,8 +16,9 @@ router.use(expressJwt({
     secret: secret,
     credentialsRequired: true,
     getToken: function fromHeaderOrQuerystring (req) {
-        if (req.headers.authorization && req.headers.authorization.split(' ')[0] === 'Bearer') {
-            return req.headers.authorization.split(' ')[1];
+        const authorization = req.headers.authorization ? req.headers.authorization.split(' ') : false;
+        if (authorization && authorization[0] === "Bearer") {
+            return authorization[1];
         } else if (req.query && req.query.token) {
             return req.query.token;
         }
