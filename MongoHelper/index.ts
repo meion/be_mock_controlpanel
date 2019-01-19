@@ -1,11 +1,12 @@
-import mongoose from "mongoose";
-import assert from "assert";
-import jwt from "jsonwebtoken";
+import * as mongoose from "mongoose";
+// import assert from "assert";
+import { verify } from "jsonwebtoken";
 import bcrypt from "bcrypt";
 
 import { Item, Group, Person, Order } from './Models';
-import db_config from "../config/db.json";
-import config from "../config/example.json";
+import * as db_config from "../config/db.json";
+import * as config from "../config/example.json";
+import { generateGroups, generateItems, generateOrders, generatePeople } from "./Generators";
 
 const secret = config.secret;
 let db_connected = false;
@@ -50,7 +51,7 @@ function isConnected() {
 
 
 
-export function getUser(username) {
+export function getUser(username): Promise<any> {
     return new Promise(async (resolve, reject) => {
         try {
             await isConnected();
@@ -72,9 +73,11 @@ export function getUser(username) {
 
 async function validateToken(token) {
     try {
-        let result = await jwt.verify(token, secret);
+        let result = await <any>verify(token, secret);
         console.log(result);
-        return result.id ? true : false;
+        if (typeof result === "object") {
+            return result.token ? true : false;
+        }
     } catch {
         return false;
     }
@@ -119,13 +122,12 @@ export function InsertMany(values, model) {
     });
 }
 
-export function InitDevEnviroment() {
-    return new Promise(async (resolve,reject) => {
-        await isConnected();
-        db.collection("Fnutter")
-        // let result = await collection.insertMany(values);
-        resolve(result.result);
-    })
+export async function InitDevEnviroment() {
+    await isConnected();
+    let items = await generateItems(50);
+    let people = await generatePeople(50);
+    let groups = await generateGroups(10, 0.25, 0.5, items, people);
+    generateOrders(people, items, groups);
 }
 
 export function Insert(value, model) {
@@ -133,7 +135,6 @@ export function Insert(value, model) {
         try{
             await isConnected();
             let result = await model.insertOne(value);
-            client.close();
             resolve(result.result)
         }catch{
             reject("Something went wrong");

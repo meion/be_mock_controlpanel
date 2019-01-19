@@ -1,6 +1,4 @@
-import mongoose from "mongoose";
-
-const Schema = mongoose.Schema;
+import { Schema, model } from "mongoose";
 
 var ItemSchema = new Schema({
     name: String,
@@ -39,7 +37,7 @@ var PersonSchema = new Schema({
     groups:[{type:Schema.Types.ObjectId, ref:'Group'}]
 })
 
-export const Item = mongoose.model("Item", ItemSchema);
-export const Order = mongoose.model("Order", OrderSchema);
-export const Group = mongoose.model("Group", GroupSchema);
-export const Person = mongoose.model("Person", PersonSchema);
+export const Item = model("Item", ItemSchema);
+export const Order = model("Order", OrderSchema);
+export const Group = model("Group", GroupSchema);
+export const Person = model("Person", PersonSchema);

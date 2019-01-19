@@ -11,14 +11,22 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@types/cors": "^2.8.4",
+    "@types/express": "^4.16.0",
+    "@types/express-jwt": "0.0.41",
+    "@types/jsonwebtoken": "^8.3.0",
+    "@types/node": "^10.12.18",
     "bcrypt": "^3.0.3",
     "body-parser": "^1.18.3",
     "cors": "^2.8.5",
+    "dayjs": "^1.8.0",
     "express": "^4.16.4",
     "express-jwt": "^5.3.1",
+    "faker": "^4.1.0",
     "json-validator": "0.0.34",
     "jsonwebtoken": "^8.4.0",
     "mongoose": "^5.4.5",
-    "pm2": "^3.2.4"
+    "pm2": "^3.2.4",
+    "typescript": "^3.2.4"
   }
 }
