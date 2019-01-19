@@ -3,7 +3,7 @@ import assert from "assert";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 
-import { getModels } from './Models';
+import { Item, Group, Person, Order } from './Models';
 import db_config from "../config/db.json";
 import config from "../config/example.json";
 
@@ -48,15 +48,13 @@ function isConnected() {
     });
 }
 
-const models = getModels();
 
 
-export function getUser(username, collectionName) {
+export function getUser(username) {
     return new Promise(async (resolve, reject) => {
         try {
             await isConnected();
-            const collection = db.collection(collectionName);
-            let result = await collection.findOne({
+            let result = await Person.findOne({
                 username: username
             });
             console.log('123123')
@@ -81,9 +79,9 @@ async function validateToken(token) {
         return false;
     }
 }
-async function validateUser(user, collectionName) {
+async function validateUser(user) {
     try {
-        let newUser = await this.getUser(user.username, collectionName);
+        let newUser = await this.getUser(user.username);
         let result = await bcrypt.compare(user.password, newUser.password)
         console.log(result);
         return result;
@@ -93,12 +91,11 @@ async function validateUser(user, collectionName) {
     }
 }
 
-export function availableUsername(username, collectionName){
+export function availableUsername(username){
     return new Promise(async (resolve ,reject) => {
         try {
             await isConnected();
-            const collection = db.collection(collectionName);
-            let result = await collection.findOne({
+            let result = await Person.findOne({
                 username: username
             });
             console.log(result);
@@ -109,12 +106,11 @@ export function availableUsername(username, collectionName){
     })
 }
 
-export function InsertMany(values, collectionName) {
+export function InsertMany(values, model) {
     return new Promise(async (resolve, reject) => {
         try {
             await isConnected();
-            const collection = db.collection(collectionName);
-            let result = await collection.insertMany(values);
+            let result = await model.insertMany(values);
             console.log(result);
             resolve(result.result);
         } catch (err) {
@@ -127,18 +123,16 @@ export function InitDevEnviroment() {
     return new Promise(async (resolve,reject) => {
         await isConnected();
         db.collection("Fnutter")
-        // const collection = db.collection(collectionName);
         // let result = await collection.insertMany(values);
         resolve(result.result);
     })
 }
 
-export function Insert(value, collectionName) {
+export function Insert(value, model) {
     return new Promise(async (resolve, reject) => {
         try{
             await isConnected();
-            const collection = db.collection(collectionName);
-            let result = await collection.insertOne(value);
+            let result = await model.insertOne(value);
             client.close();
             resolve(result.result)
         }catch{
@@ -146,10 +140,3 @@ export function Insert(value, collectionName) {
         }
     })
 }
-
-// export default {
-//     availableUsername,
-//     Insert,
-//     InsertMany,
-//     getUser
-// };

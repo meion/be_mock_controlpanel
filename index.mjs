@@ -1,6 +1,7 @@
 import express from 'express';
 import bodyParser from 'body-parser';
 import { getUser, Insert, InsertMany, availableUsername } from './MongoHelper';
+import { Item, Group, Person, Order } from './MongoHelper/Models';
 import jsonValidate from 'json-validator';
 import jwt from 'jsonwebtoken';
 import expressJwt from 'express-jwt';
@@ -60,7 +61,7 @@ router.post('/register', async (req, res) => {
         return;
     }
     try{
-        let result = await getUser(req.body.username, 'users');
+        let result = await getUser(req.body.username);
         let correctPass = await bcrypt.compare(req.body.password, result.user.password);
         if(result.user !== 'null' && correctPass){
             var token = jwt.sign({id: result.user._id}, secret, {expiresIn: 86400});
@@ -87,7 +88,7 @@ router.post('/InitDevDB', async(req, res) => {
 
 
 router.post('/insert/Items', async (req, res) => {
-    await InsertMany(req.body.values, "Item");
+    await InsertMany(req.body.values, Item);
     res.send({
         "result": "OK"
     });
@@ -100,12 +101,12 @@ router.post('/insert/user',async (req, res) => {
     }
     let username = req.body.username;
     let hashpassword = bcrypt.hashSync(req.body.password, 8);
-    let result = await availableUsername(username, "users");
+    let result = await availableUsername(username);
     if(result){
         finalResult = await Insert({
             "username":username,
             "password":hashpassword
-        }, "users");
+        }, Person);
     }else{
         finalResult = "Username already taken";
     }
